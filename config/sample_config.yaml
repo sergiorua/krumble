@@ -1,0 +1,37 @@
+global:
+  cluster_name: my_cluster.mydomain.com
+  domain: mydomain.com
+  environment: dev
+  provider: aws
+  aws:
+    region: eu-west-1
+    vpc_id:
+      hook: aws ec2 describe-vpcs --filter "Name=tag:Name,Values=dev" --query Vpcs[*].VpcId
+    subnets:
+      filters:
+        "tag:Name": "dev_private*"
+      hook: aws ec2 describe-subnets --filter "Name=tag:Name,Values=dev_private*" --query Subnets[*].SubnetId
+
+kubectl:
+  - name: kube-dashboard
+    url: https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.8.3.yaml
+    namespace: default
+
+helm:
+  repositories:
+    - name: stable
+      url: https://kubernetes-charts.storage.googleapis.com
+    - name: incubator
+      url: http://storage.googleapis.com/kubernetes-charts-incubator
+
+  helmDefaults:
+    wait: true
+    timeout: 600
+
+  releases:
+    - name: nginx-ingress
+      namespace: ingress
+      chart: stable/nginx-ingress
+      values:
+      - nginx-ingress/values.yaml
+
