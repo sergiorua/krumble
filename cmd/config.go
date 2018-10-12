@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/mitchellh/mapstructure"
 	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 )
 
 type Global struct {
@@ -28,7 +28,7 @@ type Global struct {
 	} `yaml:"aws"`
 }
 
-type Kubectl []struct {
+type Kubectl struct {
 	Name      string `yaml:"name"`
 	URL       string `yaml:"url"`
 	Namespace string `yaml:"namespace"`
@@ -36,15 +36,30 @@ type Kubectl []struct {
 
 type ConfigData struct {
 	Global  Global
-	Kubectl Kubectl
+	Kubectl []Kubectl
 	Helm    interface{}
 }
 
 /* global holding all the yaml config */
 var config ConfigData
+var helmCmd string
+var kubectlCmd string
+
+func CmdLookPath(cmd string) string {
+	path, err := exec.LookPath(cmd)
+	if err != nil {
+		log.Fatal("Could not find %s in the path\n", cmd)
+		return ""
+	}
+
+	log.Printf("using %s\n", path)
+	return path
+}
 
 func LoadConfig(configFile string) {
-	fmt.Printf("Loading config file from %s\n", configFile)
+	helmCmd = CmdLookPath("helmfile")
+	kubectlCmd = CmdLookPath("kubectl")
+	log.Printf("Loading config file from %s\n", configFile)
 
 	yamlFile, err := ioutil.ReadFile(configFile)
 	if err != nil {
@@ -68,7 +83,4 @@ func LoadConfig(configFile string) {
 		log.Fatalf("Error decoding global section: %v\n", err)
 	}
 	config.Helm = c["helm"]
-	fmt.Println(config.Global)
-	fmt.Println(config.Kubectl)
-	fmt.Println(config.Helm)
 }

@@ -11,11 +11,13 @@ import (
 var versionVar bool
 var configFile string
 var kubeconfig string
+var dryrun bool
 
 func init() {
 	home := homedir.HomeDir()
 
 	flag.BoolVar(&versionVar, "version", false, "Show version")
+	flag.BoolVar(&dryrun, "dry-run", false, "Dry Run")
 	flag.StringVar(&configFile, "config", filepath.Join(home, ".krumble.yaml"), "Absolute path to the config file")
 
 	if home != "" {
@@ -25,6 +27,8 @@ func init() {
 	}
 
 	flag.Parse()
+	flag.CommandLine.Parse([]string{})
+	flag.Set("logtostderr", "true")
 
 	if versionVar {
 		fmt.Println("Version 0.0.1")

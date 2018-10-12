@@ -13,9 +13,11 @@ global:
       hook: aws ec2 describe-subnets --filter "Name=tag:Name,Values=dev_private*" --query Subnets[*].SubnetId
 
 kubectl:
+  - name: heapster
+    url: https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/heapster.yaml
+    namespace: monitoring
   - name: kube-dashboard
-    #url: https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.8.3.yaml
-    url: /tmp/deployment.yaml
+    url: https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.8.3.yaml
     namespace: default
 
 helm:
