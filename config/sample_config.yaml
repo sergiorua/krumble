@@ -1,16 +1,74 @@
 global:
-  cluster_name: my_cluster.mydomain.com
-  domain: mydomain.com
-  environment: dev
+  cluster_name: &cluster_name my_cluster.mydomain.com
+  domain: &domain mydomain.com
+  bucket: &bucket s3://kops-my_cluster.mydomain.com
+  environment: &environment dev
   provider: aws
   aws:
     region: eu-west-1
+    availabilityZones:
+      - eu-west-1a
+      - eu-west-1b
+      - eu-west-1c
     vpc_id:
-      hook: aws ec2 describe-vpcs --filter "Name=tag:Name,Values=dev" --query Vpcs[*].VpcId
+      filters:
+        key: "tag:Name"
+        value: "dev"
+      hook: aws ec2 describe-vpcs --filter "Name=tag:Name,Values=dev" --query Vpcs[*].VpcId --output text
     subnets:
       filters:
-        "tag:Name": "dev_private*"
+        key: "tag:Name"
+        value: "dev_private*"
       hook: aws ec2 describe-subnets --filter "Name=tag:Name,Values=dev_private*" --query Subnets[*].SubnetId
+
+kops:
+  name: *cluster_name
+  state: *bucket
+  node-count: 3
+  node-size: "m5.large"
+  master-size: "m5.large"
+  master-count: 3
+#  admin-access: 
+#  api-loadbalancer-type: 
+#  api-ssl-certificate: 
+#  associate-public-ip: 
+#  authorization: 
+#  bastion: 
+#  channel: 
+#  cloud: 
+#  cloud-labels: 
+#  dns: 
+#  dns-zone: 
+#  dry-run: 
+#  encrypt-etcd-storage: 
+#  image: 
+#  kubernetes-version: 
+#  master-count: 
+#  master-public-name: 
+#  master-security-groups: 
+#  master-size: 
+#  master-tenancy: 
+#  master-volume-size: 
+#  master-zones: 
+#  model: 
+#  network-cidr: 
+#  networking: 
+#  node-count: 
+#  node-security-groups: 
+#  node-size: 
+#  node-tenancy: 
+#  node-volume-size: 
+#  out: 
+#  outout,: 
+#  project: 
+#  ssh-access: 
+#  ssh-public-key: 
+#  subnets: 
+#  target: 
+#  topology: 
+#  utility-subnets: 
+#  vpc: 
+#  zones: 
 
 kubectl:
   - name: heapster
