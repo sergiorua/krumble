@@ -62,7 +62,7 @@ kops:
 #  outout,: 
 #  project: 
 #  ssh-access: 
-#  ssh-public-key: 
+#  ssh-public-key: [file_path]
 #  subnets: 
 #  target: 
 #  topology: 

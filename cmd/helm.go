@@ -41,6 +41,7 @@ func HelmWriteConfig() (string, error) {
 
 	return tmpfile.Name(), nil
 }
+
 func ProcessHelm() error {
 	hc, err := HelmWriteConfig()
 	if err != nil {

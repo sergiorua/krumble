@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -88,6 +89,9 @@ func BuildKopsCommand() []string {
 }
 
 func ProcessKops() error {
+	os.Setenv("KOPS_STATE_STORE", config.Kops.State)
+	os.Setenv("KOPS_CLUSTER_NAME", config.Kops.Name)
+
 	full_cmd := BuildKopsCommand()
 
 	if dryrun {
