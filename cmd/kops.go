@@ -88,7 +88,7 @@ func BuildKopsCommand() []string {
 	return cmd
 }
 
-func ProcessKops() error {
+func RunKops() error {
 	os.Setenv("KOPS_STATE_STORE", config.Kops.State)
 	os.Setenv("KOPS_CLUSTER_NAME", config.Kops.Name)
 
@@ -101,4 +101,20 @@ func ProcessKops() error {
 
 	err := runCommand(kopsCmd, full_cmd...)
 	return err
+}
+
+/*
+ * runs kops and then waits until all nodes and masters are running
+ *
+ */
+func ProcessKops() error {
+	err := RunKops()
+	if err != nil {
+		log.Fatal("Error running Kops: %v\n", err)
+		return err
+	}
+	if !dryrun {
+		KopsNodesUp()
+	}
+	return nil
 }

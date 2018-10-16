@@ -27,7 +27,7 @@ kops:
   node-count: 3
   node-size: "m5.large"
   master-size: "m5.large"
-  master-count: 3
+  master-count: 1
 #  admin-access: 
 #  api-loadbalancer-type: 
 #  api-ssl-certificate: 
