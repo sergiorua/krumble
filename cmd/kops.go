@@ -15,8 +15,17 @@ func subnets2string() string {
 	return strings.Join(res, ",")
 }
 
+func utility_subnets2string() string {
+	var res []string
+	for s := range utility_subnets {
+		res = append(res, utility_subnets[s].SubnetId)
+	}
+	return strings.Join(res, ",")
+}
+
 func BuildKopsCommand() []string {
-	cmd := []string{"--name", config.Kops.Name,
+	cmd := []string{"create", "cluster",
+		"--name", config.Kops.Name,
 		"--state", config.Kops.State}
 
 	if config.Kops.AdminAccess != "" {
@@ -26,12 +35,12 @@ func BuildKopsCommand() []string {
 		cmd = append(cmd, "--master-size", config.Kops.MasterSize)
 	}
 	if config.Kops.MasterCount > 0 {
-		cmd = append(cmd, fmt.Sprintf("--master-count %d", config.Kops.MasterCount))
+		cmd = append(cmd, fmt.Sprintf("--master-count=%d", config.Kops.MasterCount))
 	} else {
-		cmd = append(cmd, "--master-count", "1")
+		cmd = append(cmd, "--master-count=1")
 	}
 	if config.Kops.NodeCount > 0 {
-		cmd = append(cmd, fmt.Sprintf("--node-count %d", config.Kops.NodeCount))
+		cmd = append(cmd, fmt.Sprintf("--node-count=%d", config.Kops.NodeCount))
 	} else {
 		cmd = append(cmd, "--node-count", "1")
 	}
@@ -44,9 +53,6 @@ func BuildKopsCommand() []string {
 		cmd = append(cmd, "--subnets", config.Kops.Subnets)
 	} else {
 		cmd = append(cmd, "--subnets", subnets2string())
-	}
-	if config.Kops.UtilitySubnets != "" {
-		cmd = append(cmd, "--utility-subnets", config.Kops.UtilitySubnets)
 	}
 	if config.Kops.KubernetesVersion != "" {
 		cmd = append(cmd, "--kubernetes-version", config.Kops.KubernetesVersion)
@@ -73,9 +79,6 @@ func BuildKopsCommand() []string {
 	}
 	if config.Kops.MasterZones != "" {
 		cmd = append(cmd, "--master-zones", config.Kops.MasterZones)
-	}
-	if config.Kops.MasterZones != "" {
-		cmd = append(cmd, "--master-zones", config.Kops.MasterZones)
 	} else {
 		cmd = append(cmd, "--master-zones", strings.Join(config.Global.Aws.AvailabilityZones, ","))
 	}
@@ -83,6 +86,11 @@ func BuildKopsCommand() []string {
 		cmd = append(cmd, "--zones", config.Kops.Zones)
 	} else {
 		cmd = append(cmd, "--zones", strings.Join(config.Global.Aws.AvailabilityZones, ","))
+	}
+	if config.Kops.UtilitySubnets != "" {
+		cmd = append(cmd, "--utility_subnets", config.Kops.UtilitySubnets)
+	} else {
+		cmd = append(cmd, "--utility-subnets", utility_subnets2string())
 	}
 
 	return cmd

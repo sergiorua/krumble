@@ -12,12 +12,14 @@ var versionVar bool
 var configFile string
 var kubeconfig string
 var dryrun bool
+var debug bool
 
 func init() {
 	home := homedir.HomeDir()
 
 	flag.BoolVar(&versionVar, "version", false, "Show version")
 	flag.BoolVar(&dryrun, "dry-run", false, "Dry Run")
+	flag.BoolVar(&debug, "debug", false, "Debug mode")
 	flag.StringVar(&configFile, "config", filepath.Join(home, ".krumble.yaml"), "Absolute path to the config file")
 
 	if home != "" {

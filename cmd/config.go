@@ -30,6 +30,10 @@ type Global struct {
 			Filters Filter `mapstructure:"filters,omitempty"`
 			Hook    string `mapstructure:"hook"`
 		} `mapstructure:"subnets"`
+		UtilitySubnets struct {
+			Filters Filter `mapstructure:"filters,omitempty"`
+			Hook    string `mapstructure:"hook"`
+		} `mapstructure:"utility-subnets"`
 	} `mapstructure:"aws"`
 }
 

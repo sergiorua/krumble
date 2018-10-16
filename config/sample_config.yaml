@@ -14,12 +14,14 @@ global:
       filters:
         key: "tag:Name"
         value: "dev"
-      hook: aws ec2 describe-vpcs --filter "Name=tag:Name,Values=dev" --query Vpcs[*].VpcId --output text
     subnets:
       filters:
         key: "tag:Name"
         value: "dev_private*"
-      hook: aws ec2 describe-subnets --filter "Name=tag:Name,Values=dev_private*" --query Subnets[*].SubnetId
+    utility-subnets:
+      filters:
+        key: "tag:Name"
+        value: "dev_public*"
 
 kops:
   name: *cluster_name

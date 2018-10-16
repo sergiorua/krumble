@@ -102,9 +102,10 @@ func RunHook(hook string) string {
 	return string(out)
 }
 
-func ProcessHooks() (AwsVpc, []AwsSubnet) {
+func ProcessHooks() (AwsVpc, []AwsSubnet, []AwsSubnet) {
 	vpc := AwsVpcLookup(config.Global.Aws.VpcID.Filters)
 	subnets := AwsSubnetsLookup(vpc.VpcId, config.Global.Aws.Subnets.Filters)
+	utility_subnets := AwsSubnetsLookup(vpc.VpcId, config.Global.Aws.UtilitySubnets.Filters)
 
-	return vpc, subnets
+	return vpc, subnets, utility_subnets
 }

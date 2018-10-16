@@ -2,6 +2,7 @@ package cmd
 
 var vpc AwsVpc
 var subnets []AwsSubnet
+var utility_subnets []AwsSubnet
 
 func Execute() {
 	LoadConfig(configFile)
@@ -9,7 +10,7 @@ func Execute() {
 	/* let's go! */
 
 	/* discover vpc and subnets */
-	vpc, subnets = ProcessHooks()
+	vpc, subnets, utility_subnets = ProcessHooks()
 
 	ProcessKops()
 

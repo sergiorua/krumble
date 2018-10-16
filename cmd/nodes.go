@@ -12,7 +12,7 @@ import (
 )
 
 func LoadKubeconf() *rest.Config {
-	kcfg, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	kcfg, err := clientcmd.BuildConfigFromFlags(config.Kops.Name, kubeconfig)
 	if err != nil {
 		log.Printf("Cannot open kubectl config: %v\n", err)
 		os.Exit(1)
@@ -22,8 +22,8 @@ func LoadKubeconf() *rest.Config {
 }
 
 func KopsNodesUp() bool {
-	var node_count int = 0
-	var master_count int = 0
+	var nodeCount int = 0
+	var masterCount int = 0
 	var timewait int = 0
 	const timeout = 300
 
@@ -33,6 +33,7 @@ func KopsNodesUp() bool {
 		panic(err.Error())
 	}
 
+	log.Printf("Waiting for kops to build %d nodes and %d masters\n", config.Kops.NodeCount, config.Kops.MasterCount)
 	for {
 		timewait += 10
 		nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
@@ -42,7 +43,7 @@ func KopsNodesUp() bool {
 				log.Printf("TIMEOUT\n")
 				return false
 			}
-			time.Sleep(10)
+			time.Sleep(10 * time.Second)
 		}
 		for i := range nodes.Items {
 			node := nodes.Items[i]
@@ -50,27 +51,30 @@ func KopsNodesUp() bool {
 				if node.Status.Conditions[x].Type == "Ready" {
 					if node.Status.Conditions[x].Status == "True" {
 						if node.ObjectMeta.Labels["kubernetes.io/role"] == "node" {
-							node_count++
+							nodeCount++
 						}
 						if node.ObjectMeta.Labels["kubernetes.io/role"] == "master" {
-							master_count++
+							masterCount++
 						}
 					}
 				}
 			}
 		}
-		log.Printf("HAVE: Nodes=%d, Masters=%d\n", node_count, master_count)
-		log.Printf("WANT: Nodes=%d, Masters=%d\n", config.Kops.NodeCount, config.Kops.MasterCount)
-		if node_count == config.Kops.NodeCount && master_count == config.Kops.MasterCount {
+		if debug {
+			log.Printf("HAVE: Nodes=%d, Masters=%d\n", nodeCount, masterCount)
+			log.Printf("WANT: Nodes=%d, Masters=%d\n", config.Kops.NodeCount, config.Kops.MasterCount)
+		}
+		if nodeCount == config.Kops.NodeCount && masterCount == config.Kops.MasterCount {
 			break
 		}
 		if timewait >= timeout {
 			log.Printf("TIMEOUT\n")
 			return false
 		}
-		time.Sleep(10)
+		log.Print(".")
+		time.Sleep(10 * time.Second)
 	}
 
-	log.Printf("Nodes=%d, Masters=%d\n", node_count, master_count)
+	log.Printf("Nodes=%d, Masters=%d\n", nodeCount, masterCount)
 	return true
 }
