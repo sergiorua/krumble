@@ -108,6 +108,16 @@ func RunKops() error {
 	}
 
 	err := runCommand(kopsCmd, full_cmd...)
+	if err != nil {
+		return err
+	}
+
+	mergeKopsConfigs()
+
+	/* now kick off the build */
+	// kops update cluster $CLUSTER_NAME --yes
+	full_cmd = []string{"update", "cluster", "--name", config.Kops.Name, "--state", config.Kops.State}
+	err = runCommand(kopsCmd, full_cmd...)
 	return err
 }
 
@@ -136,8 +146,6 @@ func ProcessKops() error {
 		log.Fatal("Error running Kops: %v\n", err)
 		return err
 	}
-
-	mergeKopsConfigs()
 
 	if !dryrun {
 		KopsNodesUp()

@@ -24,7 +24,7 @@ func AwsSubnetsLookup(vpcId string, filter Filter) []AwsSubnet {
 	var subnets []AwsSubnet
 
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("eu-west-1"),
+		Region: aws.String(config.Global.Aws.Region),
 	})
 	if err != nil {
 		log.Fatal("Cannot connec to AWS: %v\n", err)
@@ -56,7 +56,24 @@ func AwsSubnetsLookup(vpcId string, filter Filter) []AwsSubnet {
 		s.AvailabilityZone = *sb.AvailabilityZone
 		s.CidrBlock = *sb.CidrBlock
 		subnets = append(subnets, s)
+
+		if dryrun {
+			continue
+		}
+		_, errtag := svc.CreateTags(&ec2.CreateTagsInput{
+			Resources: []*string{sb.SubnetId},
+			Tags: []*ec2.Tag{
+				{
+					Key:   aws.String("KubernetesCluster"),
+					Value: aws.String(config.Kops.Name),
+				},
+			},
+		})
+		if errtag != nil {
+			log.Println("Failed to tag subnet", s.SubnetId)
+		}
 	}
+
 	return subnets
 }
 
@@ -64,7 +81,7 @@ func AwsVpcLookup(filter Filter) AwsVpc {
 	var vpc AwsVpc
 
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("eu-west-1"),
+		Region: aws.String(config.Global.Aws.Region),
 	})
 	if err != nil {
 		log.Fatal("Cannot connec to AWS: %v\n", err)
