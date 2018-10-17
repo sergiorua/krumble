@@ -1,11 +1,57 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 )
+
+const encryptionConfig = `
+kind: EncryptionConfig
+apiVersion: v1
+resources:
+  - resources:
+    - secrets
+    providers:
+    - aescbc:
+        keys:
+        - name: key1
+          secret: %s
+    - identity: {}
+`
+
+// kops create secret encryptionconfig -f $tmpfile --name $CLUSTER_NAME
+func genEncryptionConfig() error {
+	r := RandStringBytes(32)
+	encoded := base64.StdEncoding.EncodeToString([]byte(r))
+
+	tmpfile, err := ioutil.TempFile("", "kops.*.yaml")
+	if err != nil {
+		log.Printf("Cannot create temp file for encryption: %v\n", err)
+		return err
+	}
+
+	c := fmt.Sprintf(encryptionConfig, encoded)
+	if debug {
+		log.Println(c)
+	}
+	if _, err := tmpfile.Write([]byte(c)); err != nil {
+		log.Printf("Cannot write to temp file: %v\n", err)
+		return err
+	}
+	tmpfile.Close()
+
+	args := []string{"create", "secret", "encryptionconfig", "-f", tmpfile.Name(), "--name", config.Kops.Name, "--state", config.Kops.State}
+	err = runCommand(kopsCmd, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func subnets2string() string {
 	var res []string
@@ -77,6 +123,11 @@ func BuildKopsCommand() []string {
 	if config.Kops.SSHPublicKey != "" {
 		cmd = append(cmd, "--ssh-public-key", config.Kops.SSHPublicKey)
 	}
+	if config.Kops.MasterPublicName != "" {
+		cmd = append(cmd, "--master-public-name", config.Kops.MasterPublicName)
+	} else {
+		config.Kops.MasterPublicName = fmt.Sprintf("https://api-%s", config.Kops.Name)
+	}
 	if config.Kops.MasterZones != "" {
 		cmd = append(cmd, "--master-zones", config.Kops.MasterZones)
 	} else {
@@ -112,11 +163,12 @@ func RunKops() error {
 		return err
 	}
 
+	genEncryptionConfig()
 	mergeKopsConfigs()
 
 	/* now kick off the build */
 	// kops update cluster $CLUSTER_NAME --yes
-	full_cmd = []string{"update", "cluster", "--name", config.Kops.Name, "--state", config.Kops.State}
+	full_cmd = []string{"update", "cluster", "--yes", "--name", config.Kops.Name, "--state", config.Kops.State}
 	err = runCommand(kopsCmd, full_cmd...)
 	return err
 }

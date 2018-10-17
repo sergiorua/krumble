@@ -11,8 +11,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// FIXME: how do you select context?
 func LoadKubeconf() *rest.Config {
-	kcfg, err := clientcmd.BuildConfigFromFlags(config.Kops.Name, kubeconfig)
+	kcfg, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		log.Printf("Cannot open kubectl config: %v\n", err)
 		os.Exit(1)
@@ -25,7 +26,7 @@ func KopsNodesUp() bool {
 	var nodeCount int = 0
 	var masterCount int = 0
 	var timewait int = 0
-	const timeout = 300
+	const timeout = 900
 
 	cfg := LoadKubeconf()
 	clientset, err := kubernetes.NewForConfig(cfg)

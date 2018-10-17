@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 )
 
 func RunHelm(tmpfile string) error {
@@ -42,7 +43,44 @@ func HelmWriteConfig() (string, error) {
 	return tmpfile.Name(), nil
 }
 
+/* install helm
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+helm init --service-account tiller
+*/
+
+func installHelm() error {
+	args := []string{"create", "serviceaccount", "--namespace", "kube-system", "tiller"}
+	err := runCommand(kubectlCmd, args...)
+
+	if err != nil {
+		log.Printf("Aborting tiller installation: %v\n", err)
+		return err
+	}
+
+	args = []string{"create", "clusterrolebinding", "tiller-cluster-rule", "--clusterrole=cluster-admin", "--serviceaccount=kube-system"}
+	err = runCommand(kubectlCmd, args...)
+	if err != nil {
+		log.Printf("Aborting tiller installation: %v\n", err)
+		return err
+	}
+	args = []string{"init", "--service-account", "tiller"}
+	err = runCommand(kubectlCmd, args...)
+	if err != nil {
+		log.Printf("Aborting tiller installation: %v\n", err)
+		return err
+	}
+	log.Printf("Waiting for helm/tiller...")
+	time.Sleep(30 * time.Second)
+	return nil
+}
+
 func ProcessHelm() error {
+	ierr := installHelm()
+	if ierr != nil {
+		return ierr
+	}
+
 	hc, err := HelmWriteConfig()
 	if err != nil {
 		return err
