@@ -111,6 +111,21 @@ func RunKops() error {
 	return err
 }
 
+func mergeKopsConfigs() {
+	if exists(config.Kops.Snippets.Cluster) {
+		log.Printf("Merging from %s\n", config.Kops.Snippets.Cluster)
+		MergeKopsClusterSnippets(config.Kops.Snippets.Cluster)
+	}
+	if exists(config.Kops.Snippets.Master) {
+		log.Printf("Merging from %s\n", config.Kops.Snippets.Master)
+		MergeKopsClusterSnippets(config.Kops.Snippets.Master)
+	}
+	if exists(config.Kops.Snippets.Node) {
+		log.Printf("Merging from %s\n", config.Kops.Snippets.Node)
+		MergeKopsClusterSnippets(config.Kops.Snippets.Node)
+	}
+}
+
 /*
  * runs kops and then waits until all nodes and masters are running
  *
@@ -121,6 +136,9 @@ func ProcessKops() error {
 		log.Fatal("Error running Kops: %v\n", err)
 		return err
 	}
+
+	mergeKopsConfigs()
+
 	if !dryrun {
 		KopsNodesUp()
 	}

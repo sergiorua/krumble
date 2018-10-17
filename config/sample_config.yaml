@@ -24,6 +24,10 @@ global:
         value: "dev_public*"
 
 kops:
+  snippets:
+    cluster: /tmp/cluster.conf.d
+    node: /tmp/node.conf.d
+    master: /tmp/master.conf.d
   name: *cluster_name
   state: *bucket
   node-count: 3

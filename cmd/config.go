@@ -87,6 +87,11 @@ type Kops struct {
 	UtilitySubnets       string `mapstructure:"utility-subnets,omitempty"`
 	Vpc                  string `mapstructure:"vpc,omitempty"`
 	Zones                string `mapstructure:"zones,omitempty"`
+	Snippets             struct {
+		Cluster string `mapstructure:"cluster,omitempty"`
+		Node    string `mapstructure:"node,omitempty"`
+		Master  string `mapstructure:"master,omitempty"`
+	} `mapstructure:"snippets,omitempty"`
 }
 
 type ConfigData struct {
