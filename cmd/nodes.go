@@ -11,9 +11,17 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// FIXME: how do you select context?
+func buildConfigFromFlags(context, kubeconfigPath string) (*rest.Config, error) {
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+			&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+			&clientcmd.ConfigOverrides{
+					CurrentContext: context,
+			}).ClientConfig()
+}
+
 func LoadKubeconf() *rest.Config {
-	kcfg, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	//kcfg, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	kcfg, err := buildConfigFromFlags(config.Kops.Name, kubeconfig)
 	if err != nil {
 		log.Printf("Cannot open kubectl config: %v\n", err)
 		os.Exit(1)
@@ -65,7 +73,7 @@ func KopsNodesUp() bool {
 			log.Printf("HAVE: Nodes=%d, Masters=%d\n", nodeCount, masterCount)
 			log.Printf("WANT: Nodes=%d, Masters=%d\n", config.Kops.NodeCount, config.Kops.MasterCount)
 		}
-		if nodeCount == config.Kops.NodeCount && masterCount == config.Kops.MasterCount {
+		if nodeCount >= config.Kops.NodeCount && masterCount >= config.Kops.MasterCount {
 			break
 		}
 		if timewait >= timeout {
@@ -76,6 +84,6 @@ func KopsNodesUp() bool {
 		time.Sleep(10 * time.Second)
 	}
 
-	log.Printf("Nodes=%d, Masters=%d\n", nodeCount, masterCount)
+	log.Printf("Build complete\n")
 	return true
 }
