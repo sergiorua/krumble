@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/imdario/mergo"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -9,6 +10,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 func loadYaml(fileName string) map[string]interface{} {
@@ -112,11 +114,13 @@ func MergeKopsClusterSnippets(sourceDir string) {
 }
 
 func MergeKopsMasterSnippets(sourceDir string) {
-	log.Println("MASTER NOT DONE YET!!!")
-	return
-	gconf := getKopsConfig("master-ZONE")
-	mergeKopsSnippets(sourceDir, gconf)
-	log.Printf("Config saved to %s\n", gconf)
+	zones := strings.Split(config.Kops.MasterZones, ",")
+	for i := range zones {
+		s := fmt.Sprintf("master-%s", zones[i])
+		gconf := getKopsConfig(s)
+		mergeKopsSnippets(sourceDir, gconf)
+		log.Printf("Config saved to %s\n", gconf)
+	}
 
 	kopsReplaceConfig(gconf)
 }
