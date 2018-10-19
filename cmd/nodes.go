@@ -3,6 +3,7 @@ package cmd
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,10 +14,10 @@ import (
 
 func buildConfigFromFlags(context, kubeconfigPath string) (*rest.Config, error) {
 	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-			&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
-			&clientcmd.ConfigOverrides{
-					CurrentContext: context,
-			}).ClientConfig()
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		&clientcmd.ConfigOverrides{
+			CurrentContext: context,
+		}).ClientConfig()
 }
 
 func LoadKubeconf() *rest.Config {
@@ -28,6 +29,38 @@ func LoadKubeconf() *rest.Config {
 	}
 
 	return kcfg
+}
+
+func isPodRunning(podName string, namespace string) bool {
+	if getPodStatus(podName, namespace) == "Running" {
+		log.Printf("%s:%s is Running", namespace, podName)
+		return true
+	}
+	return false
+}
+
+func isPodStarting(podName string, namespace string) bool {
+	if getPodStatus(podName, namespace) == "Pending" {
+		log.Printf("%s:%s is Pending", namespace, podName)
+		return true
+	}
+	return false
+}
+
+func getPodStatus(podName string, namespace string) string {
+	cfg := LoadKubeconf()
+	clientset, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return "Unknown"
+	}
+	pods, err := clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	for _, pod := range pods.Items {
+		if strings.HasPrefix(pod.GetName(), podName) {
+			return string(pod.Status.Phase)
+		}
+	}
+
+	return "Unknown"
 }
 
 func KopsNodesUp() bool {
@@ -57,14 +90,15 @@ func KopsNodesUp() bool {
 		for i := range nodes.Items {
 			node := nodes.Items[i]
 			for x := range node.Status.Conditions {
+				if debug {
+					log.Printf("%v\n", node.Status)
+				}
 				if node.Status.Conditions[x].Type == "Ready" {
-					if node.Status.Conditions[x].Status == "True" {
-						if node.ObjectMeta.Labels["kubernetes.io/role"] == "node" {
-							nodeCount++
-						}
-						if node.ObjectMeta.Labels["kubernetes.io/role"] == "master" {
-							masterCount++
-						}
+					if node.Status.Conditions[x].Status == "True" && node.ObjectMeta.Labels["kubernetes.io/role"] == "node" {
+						nodeCount++
+					}
+					if node.Status.Conditions[x].Status == "True" && node.ObjectMeta.Labels["kubernetes.io/role"] == "master" {
+						masterCount++
 					}
 				}
 			}

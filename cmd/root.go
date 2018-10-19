@@ -9,12 +9,23 @@ func Execute() {
 
 	vpc, subnets, utility_subnets = ProcessHooks()
 
-	ProcessKops()
-
-	if helmCmd != "" {
-		ProcessHelm()
+	if runOnly == "all" || runOnly == "kops" {
+		ProcessKops()
 	}
-	if kubectlCmd != "" {
-		ProcessKubectl()
+
+	if runOnly == "nodes" {
+		KopsNodesUp()
+	}
+
+	if runOnly == "all" || runOnly == "helm" {
+		if helmfileCmd != "" {
+			ProcessHelm()
+		}
+	}
+
+	if runOnly == "all" || runOnly == "kubectl" {
+		if kubectlCmd != "" {
+			ProcessKubectl()
+		}
 	}
 }

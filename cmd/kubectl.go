@@ -10,7 +10,7 @@ import (
 
 func RunKubectl(entry Kubectl) error {
 	args := []string{"apply", "-f", entry.URL}
-	err := runCommand(helmCmd, args...)
+	err := runCommand(kubectlCmd, args...)
 	return err
 }
 

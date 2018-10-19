@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/imdario/mergo"
 	"gopkg.in/yaml.v2"
@@ -52,43 +53,54 @@ func mergeKopsSnippets(dir string, dest string) error {
 		return err
 	}
 	for _, file := range files {
-		log.Printf("Merging %s with cluster\n", file)
-		mergeYamls(file, dest)
+		log.Printf("Merging %s snippets\n", file)
+		d := mergeYamls(file, dest)
+		if debug {
+			log.Printf("%s merged into %s\n", file, d)
+		}
 	}
 	return nil
 }
 
-func getKopsConfig(section string) string {
-	// ie: kops get cluster --name=%s -oyaml
-	args := []string{"get", section, "--name", config.Kops.Name, "--state", config.Kops.State, "-oyaml"}
-	log.Printf("Running: %s %v\n", kopsCmd, args)
+// FIXME: merge this function with runCommand
+func getKopsConfig(section string, subsection string) string {
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	var args []string
+
+	if subsection != "" {
+		args = []string{"get", section, subsection, "--name", config.Kops.Name, "--state", config.Kops.State, "-oyaml"}
+	} else {
+		args = []string{"get", section, "--name", config.Kops.Name, "--state", config.Kops.State, "-oyaml"}
+	}
+
+	if debug {
+		log.Printf("Running: %s %v\n", kopsCmd, args)
+	}
+
 	cmd := exec.Command(kopsCmd, args...)
-	stdout, err := cmd.StdoutPipe()
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
 	if err != nil {
-		log.Fatalf("Cannot run %v %v\n", kopsCmd, args)
+		log.Fatalf("Cannot run %v %v: %v %v\n", kopsCmd, args, err, stderr.String())
 	}
 
-	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
-	}
-
-	contents, errc := ioutil.ReadAll(stdout)
-	if errc != nil {
-		log.Fatalf("Reading contents of 'kops get' command: %v\n", errc)
-		return ""
-	}
-
-	// WRITE TO FILE NOW
+	// WRITE TO Temp FILE NOW
 	tmpfile, errt := ioutil.TempFile("", "kops.*.yaml")
 	if errt != nil {
 		log.Fatalf("Cannot create temp file: %v\n", errt)
 	}
 	defer tmpfile.Close()
 
-	if _, err := tmpfile.Write(contents); err != nil {
+	if _, err := tmpfile.Write(out.Bytes()); err != nil {
 		log.Fatalf("Cannot write output of 'kops get cluster' to %s: %v\n", tmpfile.Name(), err)
 		tmpfile.Close()
 		return ""
+	}
+	if debug {
+		log.Printf("%s config saved to %s\n", section, tmpfile.Name())
 	}
 	return tmpfile.Name()
 }
@@ -106,7 +118,7 @@ func kopsReplaceConfig(gconf string) error {
 }
 
 func MergeKopsClusterSnippets(sourceDir string) {
-	gconf := getKopsConfig("cluster")
+	gconf := getKopsConfig("cluster", "")
 	mergeKopsSnippets(sourceDir, gconf)
 	log.Printf("Config saved to %s\n", gconf)
 
@@ -117,18 +129,15 @@ func MergeKopsMasterSnippets(sourceDir string) {
 	zones := strings.Split(config.Kops.MasterZones, ",")
 	for i := range zones {
 		s := fmt.Sprintf("master-%s", zones[i])
-		gconf := getKopsConfig(s)
+		gconf := getKopsConfig("ig", s)
 		mergeKopsSnippets(sourceDir, gconf)
 		log.Printf("Config saved to %s\n", gconf)
+		kopsReplaceConfig(gconf)
 	}
-
-	kopsReplaceConfig(gconf)
 }
 
 func MergeKopsNodeSnippets(sourceDir string) {
-	gconf := getKopsConfig("ig")
+	gconf := getKopsConfig("ig", "nodes")
 	mergeKopsSnippets(sourceDir, gconf)
-	log.Printf("Config saved to %s\n", gconf)
-
 	kopsReplaceConfig(gconf)
 }

@@ -178,13 +178,13 @@ func mergeKopsConfigs() {
 		log.Printf("Merging from %s\n", config.Kops.Snippets.Cluster)
 		MergeKopsClusterSnippets(config.Kops.Snippets.Cluster)
 	}
-	if exists(config.Kops.Snippets.Master) {
-		log.Printf("Merging from %s\n", config.Kops.Snippets.Master)
-		MergeKopsClusterSnippets(config.Kops.Snippets.Master)
-	}
 	if exists(config.Kops.Snippets.Node) {
 		log.Printf("Merging from %s\n", config.Kops.Snippets.Node)
-		MergeKopsClusterSnippets(config.Kops.Snippets.Node)
+		MergeKopsNodeSnippets(config.Kops.Snippets.Node)
+	}
+	if exists(config.Kops.Snippets.Master) {
+		log.Printf("Merging from %s\n", config.Kops.Snippets.Master)
+		MergeKopsMasterSnippets(config.Kops.Snippets.Master)
 	}
 }
 

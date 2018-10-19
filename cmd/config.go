@@ -103,6 +103,7 @@ type ConfigData struct {
 
 /* global holding all the yaml config */
 var config ConfigData
+var helmfileCmd string
 var helmCmd string
 var kubectlCmd string
 var kopsCmd string
@@ -119,7 +120,8 @@ func CmdLookPath(cmd string) string {
 }
 
 func LoadConfig(configFile string) {
-	helmCmd = CmdLookPath("helmfile")
+	helmfileCmd = CmdLookPath("helmfile")
+	helmCmd = CmdLookPath("helm")
 	kubectlCmd = CmdLookPath("kubectl")
 	kopsCmd = CmdLookPath("kops")
 

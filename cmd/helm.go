@@ -9,7 +9,7 @@ import (
 )
 
 func RunHelm(tmpfile string) error {
-	runCommand(helmCmd, "--file", tmpfile, "sync")
+	runCommand(helmfileCmd, "--file", tmpfile, "sync")
 	return nil
 }
 
@@ -43,13 +43,14 @@ func HelmWriteConfig() (string, error) {
 	return tmpfile.Name(), nil
 }
 
-/* install helm
-kubectl create serviceaccount --namespace kube-system tiller
-kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account tiller
-*/
-
+// FIXME: check if service account already exists
 func installHelm() error {
+	/* Don't re-install */
+	if getPodStatus("tiller-deploy", "kube-system") != "Unknown" {
+		log.Println("Tiller already installed")
+		return nil
+	}
+
 	args := []string{"create", "serviceaccount", "--namespace", "kube-system", "tiller"}
 	err := runCommand(kubectlCmd, args...)
 
@@ -58,14 +59,14 @@ func installHelm() error {
 		return err
 	}
 
-	args = []string{"create", "clusterrolebinding", "tiller-cluster-rule", "--clusterrole=cluster-admin", "--serviceaccount=kube-system"}
+	args = []string{"create", "clusterrolebinding", "tiller-cluster-rule", "--clusterrole=cluster-admin", "--serviceaccount=kube-system:tiller"}
 	err = runCommand(kubectlCmd, args...)
 	if err != nil {
 		log.Printf("Aborting tiller installation: %v\n", err)
 		return err
 	}
 	args = []string{"init", "--service-account", "tiller"}
-	err = runCommand(kubectlCmd, args...)
+	err = runCommand(helmCmd, args...)
 	if err != nil {
 		log.Printf("Aborting tiller installation: %v\n", err)
 		return err

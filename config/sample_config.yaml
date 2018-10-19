@@ -95,10 +95,11 @@ helm:
     wait: true
     timeout: 600
 
+# if you use env variables you MUST escape the line with '
   releases:
     - name: nginx-ingress
       namespace: ingress
       chart: stable/nginx-ingress
       values:
-      - nginx-ingress/values.yaml
+      - '{{ requiredEnv "PWD" }}/nginx-ingress/values.yaml'
 
