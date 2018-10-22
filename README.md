@@ -28,7 +28,7 @@ helm and kubectl and then call the program with the config file as an argument.
 Until now I have *ONLY* tested this tool on a AWS VPC configured with two
 subnets, one public and one private.
 
-```
+```yaml
 global:
   cluster_name: &cluster_name my_cluster.mydomain.com
   domain: &domain mydomain.com
