@@ -88,7 +88,7 @@ func getKopsConfig(section string, subsection string) string {
 	}
 
 	// WRITE TO Temp FILE NOW
-	tmpfile, errt := ioutil.TempFile("", "kops.*.yaml")
+	tmpfile, errt := ioutil.TempFile(tempDir, "kops.*.yaml")
 	if errt != nil {
 		log.Fatalf("Cannot create temp file: %v\n", errt)
 	}

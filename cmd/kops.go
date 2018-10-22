@@ -28,7 +28,7 @@ func genEncryptionConfig() error {
 	r := RandStringBytes(32)
 	encoded := base64.StdEncoding.EncodeToString([]byte(r))
 
-	tmpfile, err := ioutil.TempFile("", "kops.*.yaml")
+	tmpfile, err := ioutil.TempFile(tempDir, "kops.*.yaml")
 	if err != nil {
 		log.Printf("Cannot create temp file for encryption: %v\n", err)
 		return err
@@ -152,11 +152,6 @@ func RunKops() error {
 	os.Setenv("KOPS_CLUSTER_NAME", config.Kops.Name)
 
 	full_cmd := BuildKopsCommand()
-
-	if dryrun {
-		log.Printf("CMD: %s %s\n", kopsCmd, full_cmd)
-		return nil
-	}
 
 	err := runCommand(kopsCmd, full_cmd...)
 	if err != nil {

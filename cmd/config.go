@@ -107,6 +107,7 @@ var helmfileCmd string
 var helmCmd string
 var kubectlCmd string
 var kopsCmd string
+var dockerCmd string
 
 func CmdLookPath(cmd string) string {
 	path, err := exec.LookPath(cmd)
@@ -124,6 +125,7 @@ func LoadConfig(configFile string) {
 	helmCmd = CmdLookPath("helm")
 	kubectlCmd = CmdLookPath("kubectl")
 	kopsCmd = CmdLookPath("kops")
+	dockerCmd = CmdLookPath("docker")
 
 	log.Printf("Loading config file from %s\n", configFile)
 

@@ -24,7 +24,7 @@ func HelmWriteConfig() (string, error) {
 		return "", err
 	}
 
-	tmpfile, errt := ioutil.TempFile("", "helm.*.yaml")
+	tmpfile, errt := ioutil.TempFile(tempDir, "helm.*.yaml")
 	if errt != nil {
 		log.Fatalf("error: creating temp file: %v\n", errt)
 		return "", errt
@@ -45,6 +45,9 @@ func HelmWriteConfig() (string, error) {
 
 // FIXME: check if service account already exists
 func installHelm() error {
+	var args []string
+	var err error
+
 	/* Don't re-install */
 	if getPodStatus("tiller-deploy", "kube-system") != "Unknown" {
 		log.Println("Tiller already installed")
@@ -53,13 +56,12 @@ func installHelm() error {
 
 	account := getServiceAccount("tiller", "kube-system")
 	if account.Name == "" {
-		args := []string{"create", "serviceaccount", "--namespace", "kube-system", "tiller"}
-		err := runCommand(kubectlCmd, args...)
-	}
-
-	if err != nil {
-		log.Printf("Aborting tiller installation: %v\n", err)
-		return err
+		args = []string{"create", "serviceaccount", "--namespace", "kube-system", "tiller"}
+		err = runCommand(kubectlCmd, args...)
+		if err != nil {
+			log.Printf("Aborting tiller installation: %v\n", err)
+			return err
+		}
 	}
 
 	args = []string{"create", "clusterrolebinding", "tiller-cluster-rule", "--clusterrole=cluster-admin", "--serviceaccount=kube-system:tiller"}
