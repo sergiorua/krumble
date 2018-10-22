@@ -15,7 +15,7 @@ var kubeconfig string
 var dryrun bool
 var debug bool
 var runOnly string
-var dockerTools string
+var dockerImg string
 var tempDir string
 
 func init() {
@@ -26,7 +26,7 @@ func init() {
 	flag.BoolVar(&debug, "debug", false, "Debug mode")
 	flag.StringVar(&configFile, "config", filepath.Join(home, ".krumble.yaml"), "Absolute path to the config file")
 	flag.StringVar(&runOnly, "run-only", "all", "Mostly for debug, run only kops, nodes, kubectl or helm")
-	flag.StringVar(&dockerTools, "docker", "", "Docker image to use where you have kops, kubectl and helm installed")
+	flag.StringVar(&dockerImg, "docker", "", "Docker image to use where you have kops, kubectl and helm installed")
 
 	if home != "" {
 		flag.StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")

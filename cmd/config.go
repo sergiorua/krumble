@@ -103,29 +103,43 @@ type ConfigData struct {
 
 /* global holding all the yaml config */
 var config ConfigData
-var helmfileCmd string
-var helmCmd string
-var kubectlCmd string
-var kopsCmd string
-var dockerCmd string
+var helmfileCmd string = "helmfile"
+var helmCmd string = "helm"
+var kubectlCmd string = "kubectl"
+var kopsCmd string = "kops"
+var dockerCmd string = "docker"
 
-func CmdLookPath(cmd string) string {
-	path, err := exec.LookPath(cmd)
-	if err != nil {
-		log.Fatal("Could not find %s in the path\n", cmd)
-		return ""
+func CmdLookPath(cmd string, required ...bool) string {
+	var isRequired bool
+	if len(required) > 0 {
+		isRequired = required[0]
+	} else {
+		isRequired = false
 	}
 
-	log.Printf("using %s\n", path)
+	path, err := exec.LookPath(cmd)
+	if err != nil && isRequired {
+		log.Fatalf("Could not find %s in the path\n", cmd)
+		return ""
+	} else {
+		log.Printf("using %s\n", path)
+	}
 	return path
 }
 
 func LoadConfig(configFile string) {
-	helmfileCmd = CmdLookPath("helmfile")
-	helmCmd = CmdLookPath("helm")
-	kubectlCmd = CmdLookPath("kubectl")
-	kopsCmd = CmdLookPath("kops")
-	dockerCmd = CmdLookPath("docker")
+	var dockerRequired = false
+	var kubeCmdRequired = true
+
+	if dockerImg != "" {
+		dockerRequired = true
+		kubeCmdRequired = false
+	}
+	dockerCmd = CmdLookPath("docker", dockerRequired)
+	helmfileCmd = CmdLookPath("helmfile", kubeCmdRequired)
+	helmCmd = CmdLookPath("helm", kubeCmdRequired)
+	kubectlCmd = CmdLookPath("kubectl", kubeCmdRequired)
+	kopsCmd = CmdLookPath("kops", kubeCmdRequired)
 
 	log.Printf("Loading config file from %s\n", configFile)
 

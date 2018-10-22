@@ -57,7 +57,7 @@ func sliceins(arr []string, pos int, elem string) []string {
 
 func buildDockerCommand(command string, args ...string) []string {
 	tmpdir := fmt.Sprintf("%s:%s", tempDir, tempDir)
-	doc := []string{"run", "--rm", "-v", tmpdir, dockerTools, path.Base(command)}
+	doc := []string{"run", "--rm", "-v", tmpdir, dockerImg, path.Base(command)}
 
 	for i := len(doc) - 1; i >= 0; i-- {
 		args = sliceins(args, 0, doc[i])
@@ -74,7 +74,7 @@ func runCommand(command string, args ...string) error {
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 
-	if dockerTools != "" {
+	if dockerImg != "" {
 		log.Println("Using docker container for tools")
 		args = buildDockerCommand(command, args...)
 		command = dockerCmd

@@ -25,13 +25,14 @@ RUN wget https://github.com/kubernetes/kops/releases/download/1.10.0/kops-linux-
     wget https://github.com/kubeless/kubeless/releases/download/v1.0.0-alpha.8/kubeless_linux-amd64.zip -O kubeless_linux-amd64.zip -o /dev/null && \
     wget https://github.com/roboll/helmfile/releases/download/v0.40.1/helmfile_linux_amd64 -O /usr/bin/helmfile -o /dev/null && \
     wget https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.3.0/heptio-authenticator-aws_0.3.0_linux_amd64 -O /usr/bin/heptio-authenticator-aws -o /dev/null && \
+    wget -o/dev/null -O /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(wget -o/dev/null -O- https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
     ls -l && tar zxvf helm-v2.11.0-linux-amd64.tar.gz && \
     cp linux-amd64/helm linux-amd64/tiller /usr/bin && \
     unzip terraform_0.11.8_linux_amd64.zip -d /usr/bin && \
     unzip kubeless_linux-amd64.zip && \
     cp bundles/kubeless_linux-amd64/kubeless /usr/bin/kubeless && \
     mv kops-linux-amd64 /usr/bin/kops && \
-    chmod 755 /usr/bin/kops /usr/bin/terraform /usr/bin/helm /usr/bin/tiller /usr/bin/kubeless /usr/bin/helmfile /usr/bin/heptio-authenticator-aws
+    chmod 755 /usr/bin/kops /usr/bin/terraform /usr/bin/helm /usr/bin/tiller /usr/bin/kubeless /usr/bin/helmfile /usr/bin/heptio-authenticator-aws /usr/bin/kubectl
 
 FROM scratch
 COPY --from=builder /usr/bin/krumble /usr/bin/krumble
@@ -43,5 +44,6 @@ COPY --from=builder /usr/bin/tiller /usr/bin/tiller
 COPY --from=builder /usr/bin/kubeless /usr/bin/kubeless
 COPY --from=builder /usr/bin/helmfile /usr/bin/helmfile
 COPY --from=builder /usr/bin/heptio-authenticator-aws /usr/bin/heptio-authenticator-aws
+COPY --from=builder /usr/bin/kubectl /usr/bin/kubectl
 ENTRYPOINT [ "/usr/bin/krumble" ]
 CMD [ "--help" ]
