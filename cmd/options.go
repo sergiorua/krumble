@@ -4,6 +4,7 @@ import (
 	"fmt"
 	flag "github.com/spf13/pflag"
 	"k8s.io/client-go/util/homedir"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -14,6 +15,8 @@ var kubeconfig string
 var dryrun bool
 var debug bool
 var runOnly string
+var dockerTools string
+var tempDir string
 
 func init() {
 	home := homedir.HomeDir()
@@ -23,6 +26,7 @@ func init() {
 	flag.BoolVar(&debug, "debug", false, "Debug mode")
 	flag.StringVar(&configFile, "config", filepath.Join(home, ".krumble.yaml"), "Absolute path to the config file")
 	flag.StringVar(&runOnly, "run-only", "all", "Mostly for debug, run only kops, nodes, kubectl or helm")
+	flag.StringVar(&dockerTools, "docker", "", "Docker image to use where you have kops, kubectl and helm installed")
 
 	if home != "" {
 		flag.StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -33,6 +37,9 @@ func init() {
 	flag.Parse()
 	flag.CommandLine.Parse([]string{})
 	flag.Set("logtostderr", "true")
+
+	tempDir = CreateTempDirectory()
+	log.Printf("Work dir set to %s\n", tempDir)
 
 	if versionVar {
 		fmt.Println("Version 0.0.1")
