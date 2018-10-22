@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -61,6 +62,24 @@ func getPodStatus(podName string, namespace string) string {
 	}
 
 	return "Unknown"
+}
+
+func getServiceAccount(serAccount string, namespace string) corev1.ServiceAccount {
+	if debug {
+		log.Printf("Trying to locate %s:%s", namespace, serAccount)
+	}
+	cfg := LoadKubeconf()
+	clientset, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return corev1.ServiceAccount{}
+	}
+	serviceAccounts, err := clientset.CoreV1().ServiceAccounts(namespace).List(metav1.ListOptions{})
+	for _, serviceAccount := range serviceAccounts.Items {
+		if serviceAccount.Name == serAccount {
+			return serviceAccount
+		}
+	}
+	return corev1.ServiceAccount{}
 }
 
 func KopsNodesUp() bool {

@@ -51,8 +51,11 @@ func installHelm() error {
 		return nil
 	}
 
-	args := []string{"create", "serviceaccount", "--namespace", "kube-system", "tiller"}
-	err := runCommand(kubectlCmd, args...)
+	account := getServiceAccount("tiller", "kube-system")
+	if account.Name == "" {
+		args := []string{"create", "serviceaccount", "--namespace", "kube-system", "tiller"}
+		err := runCommand(kubectlCmd, args...)
+	}
 
 	if err != nil {
 		log.Printf("Aborting tiller installation: %v\n", err)
