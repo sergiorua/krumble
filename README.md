@@ -74,6 +74,19 @@ kubectl:
     url: https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.8.3.yaml
     namespace: default
 
+exec:
+  # sample running shell script
+  - command: monitoring/install.sh
+    env:
+      - name: AWS_ZONE
+        value: eu-west-1
+  # another command but change directory before ejecting
+  - command: ./my_command.sh
+    rundir: /home/randomuser
+    env:
+      - name: CLUSTER_NAME
+        value: *cluster_name
+
 helm:
   repositories:
     - name: stable
