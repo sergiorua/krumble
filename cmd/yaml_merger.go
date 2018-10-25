@@ -78,6 +78,9 @@ func getKopsConfig(section string, subsection string) string {
 		log.Printf("Running: %s %v\n", kopsCmd, args)
 	}
 
+	if dryrun {
+		return ""
+	}
 	cmd := exec.Command(kopsCmd, args...)
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr

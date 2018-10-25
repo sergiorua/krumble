@@ -190,7 +190,7 @@ func mergeKopsConfigs() {
 func ProcessKops() error {
 	err := RunKops()
 	if err != nil {
-		log.Fatal("Error running Kops: %v\n", err)
+		log.Fatalf("Error running Kops: %v\n", err)
 		return err
 	}
 

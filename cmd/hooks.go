@@ -27,7 +27,7 @@ func AwsSubnetsLookup(vpcId string, filter Filter) []AwsSubnet {
 		Region: aws.String(config.Global.Aws.Region),
 	})
 	if err != nil {
-		log.Fatal("Cannot connec to AWS: %v\n", err)
+		log.Fatalf("Cannot connec to AWS: %v\n", err)
 		return subnets
 	}
 
@@ -84,7 +84,7 @@ func AwsVpcLookup(filter Filter) AwsVpc {
 		Region: aws.String(config.Global.Aws.Region),
 	})
 	if err != nil {
-		log.Fatal("Cannot connec to AWS: %v\n", err)
+		log.Fatalf("Cannot connec to AWS: %v\n", err)
 		return vpc
 	}
 
@@ -113,7 +113,7 @@ func AwsVpcLookup(filter Filter) AwsVpc {
 func RunHook(hook string) string {
 	out, err := exec.Command(hook).Output()
 	if err != nil {
-		log.Fatal("Cmd %v failed: %v\n", hook, err)
+		log.Fatalf("Cmd %v failed: %v\n", hook, err)
 		return ""
 	}
 	return string(out)

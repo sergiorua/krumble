@@ -43,6 +43,15 @@ type Kubectl struct {
 	Namespace string `mapstructure:"namespace"`
 }
 
+type Exec struct {
+	Command string `mapstructure:"command"`
+	Rundir  string `mapstructure:"rundir,omitempty"`
+	Env     []struct {
+		Name  string `mapstructure:"name"`
+		Value string `mapstructure:"value"`
+	} `mapstructure:"env"`
+}
+
 type Kops struct {
 	Name                 string `mapstructure:"name,omitempty"`
 	State                string `mapstructure:"state,omitempty"`
@@ -99,6 +108,7 @@ type ConfigData struct {
 	Kubectl []Kubectl
 	Helm    interface{}
 	Kops    Kops
+	Exec    []Exec
 }
 
 /* global holding all the yaml config */
@@ -168,6 +178,11 @@ func LoadConfig(configFile string) {
 	err = mapstructure.Decode(c["kubectl"], &config.Kubectl)
 	if err != nil {
 		log.Fatalf("Error decoding global section: %v\n", err)
+	}
+
+	err = mapstructure.Decode(c["exec"], &config.Exec)
+	if err != nil {
+		log.Printf("Error decoding exec section: %v; ignoring\n", err)
 	}
 	config.Helm = c["helm"]
 }

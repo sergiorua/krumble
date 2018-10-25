@@ -23,6 +23,10 @@ func Execute() {
 		}
 	}
 
+	if runOnly == "all" || runOnly == "exec" {
+		ProcessExec()
+	}
+
 	if runOnly == "all" || runOnly == "kubectl" {
 		if kubectlCmd != "" {
 			ProcessKubectl()

@@ -97,6 +97,8 @@ func KopsNodesUp() bool {
 	log.Printf("Waiting for kops to build %d nodes and %d masters\n", config.Kops.NodeCount, config.Kops.MasterCount)
 	for {
 		timewait += 10
+		nodeCount = 0
+		masterCount = 0
 		nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
 			log.Printf("%v\n", err.Error())
