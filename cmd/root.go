@@ -9,6 +9,10 @@ func Execute() {
 
 	vpc, subnets, utility_subnets = ProcessHooks()
 
+	if runOnly == "all" || runOnly == "pre_exec" {
+		ProcessExec(config.PreExec)
+	}
+
 	if runOnly == "all" || runOnly == "kops" {
 		ProcessKops()
 	}
@@ -24,7 +28,7 @@ func Execute() {
 	}
 
 	if runOnly == "all" || runOnly == "exec" {
-		ProcessExec()
+		ProcessExec(config.Exec)
 	}
 
 	if runOnly == "all" || runOnly == "kubectl" {
@@ -32,4 +36,9 @@ func Execute() {
 			ProcessKubectl()
 		}
 	}
+
+	if runOnly == "all" || runOnly == "post_exec" {
+		ProcessExec(config.PostExec)
+	}
+
 }

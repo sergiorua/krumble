@@ -13,6 +13,13 @@ import (
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+func HasKey(dict map[string]interface{}, key string) bool {
+	if _, ok := dict[key]; ok {
+		return true
+	}
+	return false
+}
+
 func RandStringBytes(n int) string {
 	b := make([]byte, n)
 	for i := range b {

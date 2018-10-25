@@ -61,13 +61,13 @@ func execCommand(cmd Exec) error {
 	return err
 }
 
-func ProcessExec() error {
-	for i := range config.Exec {
+func ProcessExec(execConfig []Exec) error {
+	for i := range execConfig {
 		if debug {
-			log.Printf("Processing command %v\n", config.Exec[i])
+			log.Printf("Processing command %v\n", execConfig[i])
 		}
-		setEnvironment(config.Exec[i])
-		execCommand(config.Exec[i])
+		setEnvironment(execConfig[i])
+		execCommand(execConfig[i])
 	}
 
 	return nil

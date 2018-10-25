@@ -104,11 +104,13 @@ type Kops struct {
 }
 
 type ConfigData struct {
-	Global  Global
-	Kubectl []Kubectl
-	Helm    interface{}
-	Kops    Kops
-	Exec    []Exec
+	Global   Global
+	Kubectl  []Kubectl
+	Helm     interface{}
+	Kops     Kops
+	Exec     []Exec
+	PreExec  []Exec
+	PostExec []Exec
 }
 
 /* global holding all the yaml config */
@@ -175,14 +177,36 @@ func LoadConfig(configFile string) {
 		log.Fatalf("Error decoding global section: %v\n", err)
 	}
 
-	err = mapstructure.Decode(c["kubectl"], &config.Kubectl)
-	if err != nil {
-		log.Fatalf("Error decoding global section: %v\n", err)
+	if HasKey(c, "kubectl") {
+		err = mapstructure.Decode(c["kubectl"], &config.Kubectl)
+		if err != nil {
+			log.Fatalf("Error decoding global section: %v\n", err)
+		}
 	}
 
-	err = mapstructure.Decode(c["exec"], &config.Exec)
-	if err != nil {
-		log.Printf("Error decoding exec section: %v; ignoring\n", err)
+	if HasKey(c, "exec") {
+		err = mapstructure.Decode(c["exec"], &config.Exec)
+		if err != nil {
+			log.Printf("Error decoding exec section: %v; ignoring\n", err)
+		}
 	}
-	config.Helm = c["helm"]
+
+	if HasKey(c, "pre_exec") {
+		err = mapstructure.Decode(c["pre_exec"], &config.PreExec)
+		if err != nil {
+			log.Printf("Error decoding pre_exec section: %v; ignoring\n", err)
+		}
+	}
+
+	if HasKey(c, "post_exec") {
+		err = mapstructure.Decode(c["post_exec"], &config.PostExec)
+		if err != nil {
+			log.Printf("Error decoding post_exec section: %v; ignoring\n", err)
+		}
+	}
+
+	// Helm config
+	if HasKey(c, "helm") {
+		config.Helm = c["helm"]
+	}
 }
