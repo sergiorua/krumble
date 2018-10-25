@@ -74,6 +74,11 @@ kubectl:
     url: https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.8.3.yaml
     namespace: default
 
+# Possible options with take the same config parameters
+#
+# pre_exec:   -- runs firt thing
+# post_exec:  -- runs last
+# exec:       -- runs in the middle, currently after helm
 exec:
   # sample running shell script
   - command: monitoring/install.sh
