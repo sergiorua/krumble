@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -76,8 +77,25 @@ func installHelm() error {
 		log.Printf("Aborting tiller installation: %v\n", err)
 		return err
 	}
-	log.Printf("Waiting for helm/tiller...")
-	time.Sleep(30 * time.Second)
+
+	var timeout int = 120
+	var timeCount int = 0
+	log.Printf("Waiting for helm/tiller")
+	for timeCount <= timeout {
+		if isPodRunning("tiller-deploy", "kube-system") {
+			break
+		}
+		log.Print(".")
+		time.Sleep(5 * time.Second)
+		timeCount++
+	}
+	// FIXME: I'm having trouble with helm. It reports to be up and running
+	//        but it's not responsive yet
+	time.Sleep(20 * time.Second)
+	// last opportunity
+	if !isPodRunning("tiller-deploy", "kube-system") {
+		return fmt.Errorf("helm/tiller did not start. Giving up waiting")
+	}
 	return nil
 }
 

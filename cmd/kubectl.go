@@ -8,9 +8,15 @@ import (
 	"net/http"
 )
 
+var Namespaces []string
+
 func RunKubectl(entry Kubectl) error {
+	err := CreateNamespace(entry.Namespace)
+	if err != nil {
+		log.Printf("IGNORING ERROR FOR NOW!! %v\n", err)
+	}
 	args := []string{"apply", "-f", entry.URL}
-	err := runCommand(kubectlCmd, args...)
+	err = runCommand(kubectlCmd, args...)
 	return err
 }
 
@@ -40,7 +46,20 @@ func LoadKubeYamlFromFile(fpath string) []byte {
 	return dat
 }
 
+func CreateNamespace(names string) error {
+	for _, n := range Namespaces {
+		if n == names {
+			return nil
+		}
+	}
+	Namespaces = append(Namespaces, names)
+	args := []string{"create", "ns", names}
+	err := runCommand(kubectlCmd, args...)
+	return err
+}
+
 func ProcessKubectl() {
+	Namespaces = getNamespaces()
 	for i := range config.Kubectl {
 		log.Printf("Processing entry %v\n", config.Kubectl[i].Name)
 		err := RunKubectl(config.Kubectl[i])

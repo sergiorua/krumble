@@ -64,6 +64,26 @@ func getPodStatus(podName string, namespace string) string {
 	return "Unknown"
 }
 
+func getNamespaces() []string {
+	var nss []string
+	if dryrun {
+		return []string{"kube-system", "kube-public", "default"}
+	}
+	cfg := LoadKubeconf()
+	clientset, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return nss
+	}
+	nameSpaces, err := clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
+	for _, ns := range nameSpaces.Items {
+		nss = append(nss, ns.Name)
+	}
+	if debug {
+		log.Println(nss)
+	}
+	return nss
+}
+
 func getServiceAccount(serAccount string, namespace string) corev1.ServiceAccount {
 	if debug {
 		log.Printf("Trying to locate %s:%s", namespace, serAccount)
@@ -111,9 +131,6 @@ func KopsNodesUp() bool {
 		for i := range nodes.Items {
 			node := nodes.Items[i]
 			for x := range node.Status.Conditions {
-				if debug {
-					log.Printf("%v\n", node.Status)
-				}
 				if node.Status.Conditions[x].Type == "Ready" {
 					if node.Status.Conditions[x].Status == "True" && node.ObjectMeta.Labels["kubernetes.io/role"] == "node" {
 						nodeCount++

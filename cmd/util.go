@@ -94,7 +94,15 @@ func runCommand(command string, args ...string) error {
 		runCommandDry(command, args...)
 	}
 
+	// Expands env variable in the command and args like $HOME or ${HOME}
+	var args_new []string
+	for _, x := range args {
+		args_new = append(args_new, os.ExpandEnv(x))
+	}
+	args = args_new
+
 	cmd := exec.Command(command, args...)
+	cmd.Env = os.Environ()
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 
